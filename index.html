@@ -1,0 +1,844 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<title>AnishWay</title>
+<link rel="manifest" href="manifest.json" />
+<meta name="theme-color" content="#1e3a8a" />
+<link rel="apple-touch-icon" href="icon-512.png" />
+<style>
+  html, body { margin:0; padding:0; background:#0f172a; }
+  * { box-sizing: border-box; }
+</style>
+</head>
+<body>
+<div id="root"></div>
+
+<script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+<script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+<script type="text/babel" data-presets="react">
+const { useState, useEffect, useMemo, useCallback } = React;
+
+/* ==== APP CODE START ==== */
+
+
+const APP_NAME = "AnishWay";
+const NAVY = '#1e3a8a';
+const ATTEMPTS_KEY = 'quiz_attempts_v1';
+const CUSTOM_QUIZZES_KEY = 'custom_quizzes_v1';
+const LOGO_DATA_URI = "data:image/jpeg;base64,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";
+
+const PARTS_OF_SPEECH_QUESTIONS = [
+  { q: 'The artist pranced around the stage singing enthusiastically.', u: 'pranced', opts: ['Noun','Adjective','Adverb','Verb'], a: 3, t: 'Verb' },
+  { q: 'Put the fork and knife in the cutlery box.', u: 'in', opts: ['Preposition','Verb','Conjunction','Determiner'], a: 0, t: 'Preposition' },
+  { q: 'She came slowly up to the main door.', u: 'slowly', opts: ['Adjective','Adverb','Verb','Pronoun'], a: 1, t: 'Adverb' },
+  { q: 'Oh no! I am getting late for the function.', u: 'Oh no!', opts: ['Preposition','Article','Noun','Interjection'], a: 3, t: 'Interjection' },
+  { q: 'They are all going to attend the function.', u: 'They', opts: ['Noun','Adverb','Pronoun','Conjunction'], a: 2, t: 'Pronoun' },
+  { q: 'The sun shone through the dull grey clouds.', u: 'dull', opts: ['Noun','Adverb','Verb','Adjective'], a: 3, t: 'Adjective' },
+  { q: 'The Principal is presiding over the meeting.', u: 'over', opts: ['Verb','Noun','Adjective','Preposition'], a: 3, t: 'Preposition' },
+  { q: 'Cash machines permit people to withdraw money at any time.', u: 'permit', opts: ['Verb','Noun','Pronoun','Adverb'], a: 0, t: 'Verb' },
+  { q: 'The novel is loosely based on his childhood in England.', u: 'loosely', opts: ['Verb','Adverb','Noun','Adjective'], a: 1, t: 'Adverb' },
+  { q: 'Since children have so much homework to do their playtime is very limited.', u: 'playtime', opts: ['Verb','Adverb','Pronoun','Noun'], a: 3, t: 'Noun' },
+  { q: 'The conclusions that they came to are highly questionable.', u: 'questionable', opts: ['Noun','Adverb','Adjective','Gerund'], a: 2, t: 'Adjective' },
+  { q: "This year marks the quincentenary of Columbus's voyage to America.", u: 'quincentenary', opts: ['Noun','Adjective','Adverb','Article'], a: 0, t: 'Noun' },
+  { q: 'I still cherish the memories of those far-off days.', u: 'far-off', opts: ['Preposition','Conjunction','Adjective','Adverb'], a: 2, t: 'Adjective' },
+  { q: "I don't think I'll come on Saturday. I have a lot of work to do. Besides, I don't really like parties.", u: 'Besides', opts: ['Adjective','Adverb','Preposition','Conjunction'], a: 3, t: 'Conjunction' },
+  { q: 'The bottomline is that we have to make a decision today.', u: 'bottomline', opts: ['Noun','Pronoun','Adverb','Adjective'], a: 0, t: 'Noun' },
+  { q: 'Try to knock that vase over.', u: 'over', opts: ['Preposition','Conjunction','Adjective','Adverb'], a: 3, t: 'Adverb' },
+  { q: "I'd like an ice cream. Are you having one too?", u: 'one', opts: ['Noun','Pronoun','Adjective','Adverb'], a: 1, t: 'Pronoun' },
+  { q: 'My parents lent me the money. Otherwise, I could not have afforded the trip.', u: 'Otherwise', opts: ['Adjective','Adverb','Conjunction','Participle'], a: 1, t: 'Adverb' },
+  { q: 'She wrote me an anguished letter from her prison cell.', u: 'anguished', opts: ['Noun','Verb','Adjective','Adverb'], a: 2, t: 'Adjective' },
+  { q: 'There is a visitor for you.', u: 'a', opts: ['Relative Pronoun','Definite Article','Indefinite Article','Adverb'], a: 2, t: 'Article' },
+  { q: 'They wandered around aimlessly.', u: 'around', opts: ['Verb','Adjective','Intensifier','Noun'], a: 2, t: 'Adverb' },
+  { q: 'We went away after they had left.', u: 'after', opts: ['Pronoun','Adjective','Intensifier','Conjunction'], a: 3, t: 'Conjunction' },
+  { q: 'Public culture is associated with extremely new civil societies.', u: 'new', opts: ['Adverb','Intensifier','Adjective','Noun Clause'], a: 2, t: 'Adjective' },
+  { q: 'You are paying less attention to your studies these days.', u: 'less', opts: ['Adverb','Adjective','Intensifier','Noun'], a: 1, t: 'Adjective' },
+  { q: 'Why, is it really Sujata on the phone?', u: 'Why', opts: ['Interjection','Adjective','Intensifier','Noun'], a: 0, t: 'Interjection' },
+  { q: 'Sit down and rest a while.', u: 'while', opts: ['Adverb','Adjective','Intensifier','Noun'], a: 3, t: 'Noun' },
+  { q: 'Rakesh is too old to run fast.', u: 'too', opts: ['Adverb','Conjunction','Intensifier','Noun'], a: 2, t: 'Adverb' },
+  { q: 'For the next generation of interior architects and design graduates, work opportunities are immense.', u: 'opportunities', opts: ['Adverb','Adjective','Noun','Pronoun'], a: 2, t: 'Noun' },
+  { q: 'Life is a solo fight, and each person makes his or her own journey.', u: 'solo', opts: ['Noun','Adjective','Intensifier','Adverb'], a: 1, t: 'Adjective' },
+  { q: 'The cat loves comfort.', u: 'The', opts: ['Indefinite article','Definite article','Intensifier','Subject'], a: 1, t: 'Article' },
+  { q: 'All the pilgrims rested for a while under the banyan tree.', u: 'under', opts: ['Adverb','Place value','Preposition','Verb'], a: 2, t: 'Preposition' },
+  { q: 'The wonderful statue of the leader welcomes all people to the city.', u: 'statue', opts: ['Object','Adjective','Noun Phrase','Noun'], a: 3, t: 'Noun' },
+  { q: 'This is his pen.', u: 'his', opts: ['Possessive pronoun','Possessive adjective','Adverb','Verb'], a: 1, t: 'Pronoun' },
+  { q: 'When people found that the jewel was in the records of Rahim, they gave it to him.', u: 'it', opts: ['Pronoun','Nominative','Noun','Adverb'], a: 0, t: 'Pronoun' },
+  { q: "It is eleven O'clock now and all of us should retire to bed.", u: 'It', opts: ['Personal pronoun','Relative pronoun','Impersonal pronoun','Verb'], a: 2, t: 'Pronoun' },
+  { q: 'The flower is very beautiful.', u: 'very', opts: ['Adjective','Adverb','Preposition','Conjunction'], a: 1, t: 'Adverb' },
+  { q: 'This boy is stronger than Ramesh.', u: 'This', opts: ['Pronoun','Adjective','Article','Adverb'], a: 1, t: 'Adjective' },
+  { q: 'I hurt myself.', u: 'myself', opts: ['Noun','Pronoun','Demonstrative pronoun','Adjective'], a: 1, t: 'Pronoun' },
+  { q: 'The ants fought the wasps.', u: 'fought', opts: ['Intransitive verb','Transitive verb','Demonstrative verb','Adjective'], a: 1, t: 'Verb' },
+  { q: 'I can hardly believe it.', u: 'hardly', opts: ['Adjective','Preposition','Adverb','Verb'], a: 2, t: 'Adverb' },
+  { q: 'The preacher said, "No one is above the all powerful"', u: 'above', opts: ['Adverb','Place value','Preposition','Verb'], a: 2, t: 'Preposition' },
+  { q: 'The most beautiful seven monkeys of the landlord were taken for a stroll.', u: 'most beautiful', opts: ['Object','Adjective','Noun phrase','Noun'], a: 1, t: 'Adjective' },
+  { q: 'Alas! He has been defeated.', u: 'Alas', opts: ['Adjective','Adverb','Interjection','Conjunction'], a: 2, t: 'Interjection' },
+  { q: 'The man who is in the green shirt is the chief of the day.', u: 'who', opts: ['Pronoun','Relative pronoun','Demonstrative pronouns','Assertive noun'], a: 1, t: 'Pronoun' },
+  { q: 'He has been living in the jungle for long and he knows all the animals here.', u: 'and', opts: ['Subordinating conjunction','Coordinating conjunction','Preposition','Personal pronoun'], a: 1, t: 'Conjunction' },
+  { q: 'This time we woke up to virus-related diseases.', u: 'This', opts: ['Demonstrative','Article','Adverb','Noun phrase'], a: 0, t: 'Pronoun' },
+  { q: 'Love your neighbour as thyself.', u: 'thyself', opts: ['Noun','Pronoun','Preposition','Adjective'], a: 1, t: 'Pronoun' },
+  { q: 'Ravi won the match with a huge margin.', u: 'won', opts: ['Intransitive verb','Transitive verb','Demonstrative verb','Adjective'], a: 1, t: 'Verb' },
+  { q: 'There was an exultation in the group.', u: 'exultation', opts: ['Adjective','Adverb','Adjectival Noun','Noun'], a: 3, t: 'Noun' },
+  { q: 'He has been working in the Department of Foreign Affairs since 2002.', u: 'since', opts: ['Preposition','Adjective','Intensifier','Noun'], a: 0, t: 'Preposition' },
+  { q: 'The man in dark blue is the one who made us win the match.', u: 'who', opts: ['Relative','Interrogative pronoun','Relative pronoun','Affirmative clause'], a: 2, t: 'Pronoun' },
+  { q: 'The most beautiful actor of the industry was awarded today.', u: 'most beautiful', opts: ['Adjective','Numeral','Adverb','Noun'], a: 0, t: 'Adjective' },
+  { q: '"What is the latest news?" asked the Captain.', u: 'latest', opts: ['Relative pronoun','Adjective','Adverb','Adjectival clause'], a: 1, t: 'Adjective' },
+  { q: 'Noticing the change in the behaviour of the officer, the cadets returned to their position.', u: 'Noticing', opts: ['Participle','Present continuous','Noun phrase','Noun'], a: 0, t: 'Verb Forms' },
+  { q: 'The building is very ancient.', u: 'is', opts: ['Transitive verb','Intransitive verb','Phrasal verb','Auxiliary verb'], a: 1, t: 'Verb' },
+  { q: 'Hurrah! What a scintillating beauty the landscape is!', u: 'Hurrah', opts: ['Conjunction','Adjective','Adverb','Interjection'], a: 3, t: 'Interjection' },
+  { q: 'Ravi was declared as the winner in the tie because he had hit the most number of fours and sixes.', u: 'because', opts: ['Conjunction','Interjection','Adverb','Cause'], a: 0, t: 'Conjunction' },
+  { q: 'Rita eats her dinner quickly.', u: 'eats', opts: ['Verb','Preposition','Adjective','Adverb'], a: 0, t: 'Verb' },
+  { q: 'He thought the movie ended abruptly.', u: 'abruptly', opts: ['Noun','Adverb','Verb','Adjective'], a: 1, t: 'Adverb' },
+  { q: 'I will meet you in the third week of August.', u: 'in', opts: ['Pronoun','Verb','Preposition','Noun'], a: 2, t: 'Preposition' },
+  { q: 'Jasmines and roses are my favourite flowers.', u: 'and', opts: ['Verb','Preposition','Conjunction','Interjection'], a: 2, t: 'Conjunction' },
+  { q: "She truthfully answered the detective's questions.", u: 'truthfully', opts: ['Verb','Adjective','Noun','Adverb'], a: 3, t: 'Adverb' },
+  { q: 'Hurrah! We won the game!', u: 'Hurrah', opts: ['Interjection','Conjunction','Noun','Pronoun'], a: 0, t: 'Interjection' },
+  { q: 'The son writes meaningless letters to his father.', u: 'meaningless', opts: ['Adverb','Verb','Pronoun','Adjective'], a: 3, t: 'Adjective' },
+  { q: 'The children were walking through the forest.', u: 'through', opts: ['Verb','Adverb','Adjective','Preposition'], a: 3, t: 'Preposition' },
+  { q: 'Consequently, this poses a threat to agriculture and human health.', u: 'Consequently', opts: ['Adjective','Adverb','Verb','Noun'], a: 1, t: 'Adverb' },
+  { q: 'His only answer was a grunt.', u: 'only', opts: ['Noun','Adjective','Pronoun','Determiner'], a: 1, t: 'Adjective' },
+  { q: 'To swim every day is good for health.', u: 'To swim', opts: ['Participle','Infinitive verb','Gerund','Adjective'], a: 1, t: 'Verb Forms' },
+  { q: 'I didn\u2019t tell him anything except that I needed the money.', u: 'except that', opts: ['Adjective','Adverb','Preposition','Conjunction'], a: 3, t: 'Conjunction' },
+  { q: 'She married at 18 and gave birth to her first child shortly thereafter.', u: 'thereafter', opts: ['Pronoun','Determiner','Adjective','Adverb'], a: 3, t: 'Adverb' },
+  { q: 'He is one of the tallest boys in his class.', u: 'his', opts: ['Possessive adjective','Noun','Reflexive Pronoun','Numeral Adjective'], a: 0, t: 'Pronoun' },
+  { q: 'The mighty river Brahmaputra flows through the plains of Assam.', u: 'mighty', opts: ['Adverb','Adjective','Noun','Pronoun'], a: 1, t: 'Adjective' },
+  { q: 'The money which one earns is not the money for himself, it is for the family and society.', u: 'himself', opts: ['Noun','Pronoun','Verb','Adverb'], a: 1, t: 'Pronoun' },
+  { q: 'The Principal said, "We should always be disciplined."', u: 'always', opts: ['Preposition','Adverb','Adjective','Determiner'], a: 1, t: 'Adverb' },
+  { q: 'The river that flows through the village is a tributary of the Cauvery.', u: 'river', opts: ['Pronoun','Noun','Verb','Adjective'], a: 1, t: 'Noun' },
+  { q: 'Adders are the only poisonous snakes found across Britain.', u: 'Adders', opts: ['Noun','Adjective','Adverb','Determiner'], a: 0, t: 'Noun' },
+  { q: 'She spoke to him once since he has been in town.', u: 'since', opts: ['Adjective','Adverb','Conjunction','Preposition'], a: 2, t: 'Conjunction' },
+  { q: 'I don\u2019t really want to go. Besides, it\u2019s late now.', u: 'now', opts: ['Adjective','Adverb','Preposition','Conjunction'], a: 1, t: 'Adverb' },
+  { q: 'Look at that man over there.', u: 'that', opts: ['Adverb','Conjunction','Determiner','Article'], a: 2, t: 'Determiner' },
+  { q: 'The plane is ready for take-off.', u: 'take-off', opts: ['Noun','Conjunction','Verb','Gerund'], a: 0, t: 'Noun' },
+];
+
+const BIHAR_GK_QUESTIONS = [
+  { q: "Bihar ke pehle Mukhyamantri (Chief Minister) kaun the?", opts: ["Anugrah Narayan Sinha", "Dr. Sri Krishna Sinha", "Karpoori Thakur", "Jagannath Mishra"], a: 1, t: "Bihar GK - History" },
+  { q: "Bihar ke pehle Rajyapal (Governor) kaun the?", opts: ["Jairamdas Daulatram", "James Sifton", "M. A. Ayyangar", "Satyendra Narayan Sinha"], a: 1, t: "Bihar GK - History" },
+  { q: "Bihar ki pehli mahila Mukhyamantri kaun thi?", opts: ["Rama Devi", "Rabri Devi", "Meira Kumar", "Sushila Kumari"], a: 1, t: "Bihar GK - History" },
+  { q: "Bihar ki pehli mahila Rajyapal kaun thi?", opts: ["Rabri Devi", "Sarojini Naidu", "Rama Devi", "Krishna Sobti"], a: 2, t: "Bihar GK - History" },
+  { q: "Bihar Vidhan Sabha ke pehle Speaker (Adhyaksh) kaun the?", opts: ["Dr. Anugrah Narayan Sinha", "Dr. Sri Krishna Sinha", "Bindeshwari Prasad Mandal", "Ramdeo Prasad Verma"], a: 0, t: "Bihar GK - Polity" },
+  { q: "1936 me Bihar se kaunsa rajya alag hokar bana?", opts: ["Jharkhand", "Odisha (Orissa)", "West Bengal", "Chhattisgarh"], a: 1, t: "Bihar GK - History" },
+  { q: "Jharkhand rajya Bihar se alag hokar kab bana?", opts: ["1 November 2000", "15 November 2000", "26 January 2001", "2 October 2000"], a: 1, t: "Bihar GK - History" },
+  { q: "Magadh samrajya ki sabse prachin rajdhani kaunsi thi?", opts: ["Pataliputra", "Vaishali", "Rajgir (Girivraj)", "Nalanda"], a: 2, t: "Bihar GK - History" },
+  { q: "Mauryan aur Gupta kaal me Magadh samrajya ki rajdhani kaunsi thi?", opts: ["Rajgir", "Vaishali", "Champa", "Pataliputra"], a: 3, t: "Bihar GK - History" },
+  { q: "Duniya ke sabse purane residential vishwavidyalayon me se ek, Bihar ki kaunsi university hai?", opts: ["Patna University", "Nalanda University", "Magadh University", "Vikramshila University"], a: 1, t: "Bihar GK - Education" },
+  { q: "Bihar ka Rajya Vriksh (State Tree) kya hai?", opts: ["Neem", "Peepal", "Ashok", "Banyan"], a: 1, t: "Bihar GK - Geography" },
+  { q: "Bihar ki kaunsi nadi ko 'Bihar ka Shok' (Sorrow of Bihar) kaha jata hai?", opts: ["Gandak", "Ganga", "Kosi", "Sone"], a: 2, t: "Bihar GK - Geography" },
+  { q: "'Manjusha Kala' ya 'Angika Art' Bihar ke kis kshetra se sambandhit hai?", opts: ["Mithila", "Anga (Bhagalpur) kshetra", "Magadh kshetra", "Vaishali kshetra"], a: 1, t: "Bihar GK - Culture" },
+  { q: "1857 ke swatantrata sangram me Bihar ke pramukh netritvakarta kaun the?", opts: ["Mangal Pandey", "Veer Kunwar Singh", "Birsa Munda", "Tantia Tope"], a: 1, t: "Bihar GK - History" },
+  { q: "Vartaman me Bihar rajya me kul kitne zile (districts) hain?", opts: ["36", "37", "38", "40"], a: 2, t: "Bihar GK - Geography" },
+  { q: "Bihar Vidhan Mandal (Legislature) kis prakar ka hai?", opts: ["Ekaksheeya (Unicameral)", "Dwiksheeya (Bicameral) - Vidhan Sabha aur Vidhan Parishad", "Tribicameral", "Koi vidhan mandal nahi hai"], a: 1, t: "Bihar GK - Polity" },
+  { q: "Valmiki National Park Bihar ke kis zile me sthit hai?", opts: ["Purnia", "Paschim Champaran (West Champaran)", "Gaya", "Bhagalpur"], a: 1, t: "Bihar GK - Geography" },
+  { q: "Gautam Buddha ko gyaan (enlightenment) Bihar ke kis sthaan par prapt hua tha?", opts: ["Rajgir", "Nalanda", "Bodh Gaya", "Vaishali"], a: 2, t: "Bihar GK - History" },
+  { q: "Bengal se alag hokar Bihar rajya ka gathan kab hua tha?", opts: ["22 March 1912", "1 April 1936", "15 August 1947", "26 January 1950"], a: 0, t: "Bihar GK - History" },
+  { q: "Bihar ke pehle Deputy Chief Minister kaun the?", opts: ["Karpoori Thakur", "Anugrah Narayan Sinha", "Satyendra Narayan Sinha", "Ram Lakhan Singh Yadav"], a: 1, t: "Bihar GK - Polity" },
+];
+
+const RAILWAY_GK_QUESTIONS = [
+  { q: "Bharat ke pratham yatri rail ne 1853 me kis marg par safar kiya tha?", opts: ["Delhi se Agra", "Bombay se Thane", "Calcutta se Howrah", "Madras se Arcot"], a: 1, t: "Railway GK - History" },
+  { q: "Bharatiya Railway ka rashtriyakaran (nationalization) kab hua?", opts: ["1947", "1951", "1935", "1962"], a: 1, t: "Railway GK - History" },
+  { q: "1974 ki bhaari Railway hadtal (strike) ka netritva kisne kiya tha?", opts: ["George Fernandes", "Jyoti Basu", "Madhu Limaye", "V. V. Giri"], a: 0, t: "Railway GK - History" },
+  { q: "ISRO (Indian Space Research Organisation) ke sansthapak kaun the?", opts: ["Dr. Homi J. Bhabha", "Dr. Vikram Sarabhai", "Dr. A. P. J. Abdul Kalam", "Satish Dhawan"], a: 1, t: "Railway GK - Science" },
+  { q: "'Origin of Species' pustak ke lekhak kaun hain?", opts: ["Isaac Newton", "Charles Darwin", "Gregor Mendel", "Albert Einstein"], a: 1, t: "Railway GK - Science" },
+  { q: "UNICEF ka headquarters kaha sthit hai?", opts: ["Geneva", "Paris", "New York", "London"], a: 2, t: "Railway GK - General Awareness" },
+  { q: "Indian National Congress ke pehle Muslim Adhyaksh (President) kaun the?", opts: ["Maulana Abul Kalam Azad", "Badruddin Tyabji", "Rafi Ahmed Kidwai", "Hakim Ajmal Khan"], a: 1, t: "Railway GK - History" },
+  { q: "Government of India Act 1935 ne bhaarat me kya introduce kiya?", opts: ["Purna Swaraj", "Provincial Autonomy", "Dyarchy", "Diwani Adhikar"], a: 1, t: "Railway GK - History" },
+  { q: "Sanchi Stupa ka nirman kis samrat ne karwaya tha?", opts: ["Chandragupta Maurya", "Samrat Ashoka", "Bindusara", "Kanishka"], a: 1, t: "Railway GK - History" },
+  { q: "Umayalpuram K. Sivaraman kis vaady yantra (musical instrument) ke liye prasiddh hain?", opts: ["Sitar", "Tabla", "Mridangam", "Veena"], a: 2, t: "Railway GK - Culture" },
+  { q: "Bharat me Rail network ka vistar kis Governor-General ke shaasan kaal me hua?", opts: ["Lord Curzon", "Lord Dalhousie", "Lord Canning", "Lord Mountbatten"], a: 1, t: "Railway GK - History" },
+  { q: "Bharat ki pehli Metro Rail seva kis shehar me shuru hui thi?", opts: ["Delhi", "Mumbai", "Kolkata", "Chennai"], a: 2, t: "Railway GK - Railway Specific" },
+  { q: "Vartaman me Bharatiya Railway ka network kitne administrative zones me baata gaya hai?", opts: ["16", "17", "18", "20"], a: 2, t: "Railway GK - Railway Specific" },
+  { q: "Bharat ka sabse lamba railway platform (2026 tak) kaunsa hai?", opts: ["Gorakhpur Junction", "Kharagpur Junction", "Hubballi Junction (SSS Hubballi)", "Kollam Junction"], a: 2, t: "Railway GK - Railway Specific" },
+  { q: "GST (Goods and Services Tax) bhaarat me kab lagu hua?", opts: ["1 April 2016", "1 July 2017", "1 January 2018", "1 July 2016"], a: 1, t: "Railway GK - Economy" },
+  { q: "Bharat ka sabse bada Public Sector Bank (assets ke aadhar par) kaunsa hai?", opts: ["Punjab National Bank", "Bank of Baroda", "State Bank of India", "Canara Bank"], a: 2, t: "Railway GK - Economy" },
+  { q: "Vande Bharat Express kis prakar ki train hai?", opts: ["Diesel-electric locomotive train", "Self-propelled semi-high-speed train-set", "Steam engine train", "Maglev train"], a: 1, t: "Railway GK - Railway Specific" },
+  { q: "Bharatiya Railway duniya ka kitne bade network ke roop me jaana jata hai?", opts: ["Sabse bada (1st)", "Doosra sabse bada (2nd)", "Teesra sabse bada (3rd)", "Chautha sabse bada (4th)"], a: 3, t: "Railway GK - Railway Specific" },
+  { q: "'Frontier Gandhi' ke naam se kise jaana jata hai?", opts: ["Maulana Azad", "Khan Abdul Ghaffar Khan", "Liaquat Ali Khan", "Zakir Hussain"], a: 1, t: "Railway GK - History" },
+  { q: "Bharat ki pratham electric train kab chalayi gayi thi?", opts: ["1905", "1925", "1947", "1951"], a: 1, t: "Railway GK - History" },
+];
+
+const QUANT_HARD_QUESTIONS = [
+  { q: "Rs. 8000 par 10% varshik dar se 2 varsh ke Chakravriddhi Byaj (CI) aur Sadharan Byaj (SI) ka antar kitna hoga?", opts: ["Rs. 60", "Rs. 80", "Rs. 100", "Rs. 120"], a: 1, t: "Quant - Interest" },
+  { q: "A akela kaam 12 din me aur B akela 18 din me karta hai. Dono milkar kaam kitne dino me poora karenge?", opts: ["7.2 din", "8 din", "9 din", "6 din"], a: 0, t: "Quant - Time & Work" },
+  { q: "120 meter lambi ek train ek khambe (pole) ko 8 second me paar karti hai. Train ki gati (km/h me) kya hai?", opts: ["48 km/h", "50 km/h", "54 km/h", "60 km/h"], a: 2, t: "Quant - Time Speed Distance" },
+  { q: "150m aur 120m lambi do trainein virudh disha (opposite direction) me 54 km/h aur 36 km/h ki gati se chal rahi hain. Ek doosre ko paar karne me kitna samay lagega?", opts: ["8 second", "9.6 second", "10.8 second", "12 second"], a: 2, t: "Quant - Time Speed Distance" },
+  { q: "A:B:C = 2:3:5 ke anupaat me Rs. 500 baante gaye. C aur A ke hisso ka antar kitna hai?", opts: ["Rs. 100", "Rs. 120", "Rs. 150", "Rs. 180"], a: 2, t: "Quant - Ratio" },
+  { q: "Kis dar (rate) par Sadharan Byaj (SI) se koi rashi 8 varsho me dugni ho jaati hai?", opts: ["10%", "12%", "12.5%", "15%"], a: 2, t: "Quant - Interest" },
+  { q: "Ek vastu ka mulya pehle 25% badhaya gaya, phir naye mulya me 20% ki chhoot (discount) di gayi. Mool mulya ki tulna me shudh (net) parivartan kya hai?", opts: ["5% vridhi", "No change (0%)", "5% kami", "10% vridhi"], a: 1, t: "Quant - Percentage" },
+  { q: "11 sankhyaon ka ausat (average) 42 hai. Pehle 6 sankhyaon ka ausat 37 hai aur antim 6 sankhyaon ka ausat 46 hai. Chhathi (6th) sankhya kya hai?", opts: ["30", "33", "36", "40"], a: 2, t: "Quant - Average" },
+  { q: "Pipe A ek tanki ko 6 ghante me bhar sakta hai, Pipe B usi tanki ko 8 ghante me khaali kar sakta hai. Agar dono pipe ek saath khole jaayen, to tanki kitne samay me bhar jaayegi?", opts: ["18 ghante", "20 ghante", "24 ghante", "30 ghante"], a: 2, t: "Quant - Pipes & Cisterns" },
+  { q: "Ek nauka (boat) ki dhaara ke saath (downstream) gati 20 km/h hai aur dhaara ke virudh (upstream) gati 12 km/h hai. Shaant jal me nauka ki gati kya hai?", opts: ["14 km/h", "16 km/h", "18 km/h", "20 km/h"], a: 1, t: "Quant - Boats & Streams" },
+  { q: "Kisi rashi par SI se woh 2 varsh me Rs. 2200 aur 5 varsh me Rs. 2500 ho jaati hai. Mool rashi (Principal) kya hai?", opts: ["Rs. 1800", "Rs. 1900", "Rs. 2000", "Rs. 2100"], a: 2, t: "Quant - Interest" },
+  { q: "Rs. 10,000 par 10% varshik dar se 3 varsh ka Chakravriddhi Byaj (CI) kitna hoga?", opts: ["Rs. 3000", "Rs. 3100", "Rs. 3300", "Rs. 3310"], a: 3, t: "Quant - Interest" },
+  { q: "A akela ek kaam 15 din me karta hai. B, A se 50% adhik kushal (efficient) hai. B akela wahi kaam kitne dino me karega?", opts: ["8 din", "9 din", "10 din", "12 din"], a: 2, t: "Quant - Time & Work" },
+  { q: "Do sankhyaon ka yog 45 hai aur unka anupaat 4:5 hai. Badi (larger) sankhya kya hai?", opts: ["20", "22", "25", "28"], a: 2, t: "Quant - Numbers" },
+  { q: "Rs. 1000 ankit mulya (marked price) par 10% aur 20% ke lagatar (successive) chhoot dene par vikray mulya (SP) kya hoga?", opts: ["Rs. 680", "Rs. 700", "Rs. 720", "Rs. 750"], a: 2, t: "Quant - Percentage" },
+  { q: "A aur B milkar ek kaam 6 din me karte hain, A akela wahi kaam 10 din me karta hai. Kul mazdoori Rs. 600 me A aur B ke kaam ke anupaat me baanti jaati hai. A ka hissa kitna hoga?", opts: ["Rs. 300", "Rs. 320", "Rs. 350", "Rs. 360"], a: 3, t: "Quant - Time & Work" },
+  { q: "Pita ki umar putra ki umar ka 3 guna hai. 5 varsh baad pita ki umar putra ki umar ka 2.5 guna ho jaayegi. Putra ki vartaman umar kya hai?", opts: ["10 varsh", "12 varsh", "15 varsh", "18 varsh"], a: 2, t: "Quant - Ages" },
+  { q: "35 litre mishran (mixture) me doodh aur paani 5:2 ke anupaat me hain. Paani milane se anupaat 5:3 ho jaata hai. Kitna paani milaya gaya?", opts: ["3 litre", "4 litre", "5 litre", "6 litre"], a: 2, t: "Quant - Mixture & Alligation" },
+  { q: "Do sankhyaon ka gunanphal (product) 2160 hai aur unka HCF 12 hai. Unka LCM kya hoga?", opts: ["150", "160", "180", "200"], a: 2, t: "Quant - HCF & LCM" },
+  { q: "Ek shahar ki jansankhya pratham varsh 10% badhti hai aur dwitiya varsh 10% ghatti hai. Do varsho ke baad shudh (net) parivartan kya hoga?", opts: ["No change", "1% ki kami", "1% ki vridhi", "2% ki kami"], a: 1, t: "Quant - Percentage" },
+];
+
+const REASONING_HARD_QUESTIONS = [
+  { q: "Shrinkhala poori karein: 3, 8, 15, 24, 35, ?", opts: ["46", "48", "49", "50"], a: 1, t: "Reasoning - Number Series" },
+  { q: "Shrinkhala poori karein: 2, 6, 12, 20, 30, ?", opts: ["40", "42", "44", "46"], a: 1, t: "Reasoning - Number Series" },
+  { q: "Yadi 1 Jan 2024 ko Somvar (Monday) tha, to 1 Jan 2025 ko kaunsa din hoga? (2024 leap year hai)", opts: ["Mangalvar", "Budhvar", "Guruvar", "Shukravar"], a: 1, t: "Reasoning - Calendar" },
+  { q: "Yadi 8 March 2023 ko Budhvar (Wednesday) tha, to 8 March 2024 ko kaunsa din hoga?", opts: ["Guruvar", "Shukravar", "Shanivar", "Ravivar"], a: 1, t: "Reasoning - Calendar" },
+  { q: "A, B ka bhai hai. B, C ki behen hai. C, D ka pita hai. A ka D se kya rishta hai?", opts: ["Chacha/Mama", "Bhai", "Beta", "Dada"], a: 0, t: "Reasoning - Blood Relations" },
+  { q: "Ek code me 'RAIN' ko 'SBJO' likha jaata hai. Isi code me 'SNOW' ko kaise likha jaayega?", opts: ["TOPX", "TOPZ", "TPQX", "UOPX"], a: 0, t: "Reasoning - Coding-Decoding" },
+  { q: "Ek vyakti Uttar (North) ki taraf chalta hai, phir dayen (right) mudta hai, phir phir dayen mudta hai. Ab uska mukh kis disha me hai?", opts: ["Uttar (North)", "Dakshin (South)", "Purva (East)", "Paschim (West)"], a: 1, t: "Reasoning - Direction Sense" },
+  { q: "Yadi A=1, B=2, C=3...Z=26 maankar 'CAT' ko '3-1-20' yaani '3120' likha jaata hai, to 'DOG' ko kaise likha jaayega?", opts: ["4157", "4179", "4517", "4715"], a: 0, t: "Reasoning - Coding-Decoding" },
+  { q: "Vishamta (Odd one out) chuniye:", opts: ["Table", "Chair", "Sofa", "Mango"], a: 3, t: "Reasoning - Classification" },
+  { q: "Panch mitr A,B,C,D,E ek pankti me baithe hain. B, A ke dayen hai. C, B ke dayen hai. D, C ke dayen hai. E, D ke dayen hai. Sabse baayen (leftmost) kaun baitha hai?", opts: ["A", "B", "C", "E"], a: 0, t: "Reasoning - Seating Arrangement" },
+  { q: "Sambandh (Analogy): Doctor : Hospital :: Teacher : ?", opts: ["Clinic", "School", "Court", "Office"], a: 1, t: "Reasoning - Analogy" },
+  { q: "Sambandh (Analogy): Pen : Write :: Knife : ?", opts: ["Cook", "Cut", "Draw", "Sharpen"], a: 1, t: "Reasoning - Analogy" },
+  { q: "Yadi darpan (mirror) me ghadi '2:30' baje ka samay dikhaati hai, to vaastavik (actual) samay kya hoga?", opts: ["9:30", "10:30", "9:00", "8:30"], a: 0, t: "Reasoning - Mirror Image" },
+  { q: "Shrinkhala poori karein: AZ, BY, CX, DW, ?", opts: ["EV", "EU", "FV", "FU"], a: 0, t: "Reasoning - Alphabet Series" },
+  { q: "5 vyaktiyon me: P, Q se lamba hai lekin R se chota hai. S sabse lamba hai. T, Q se chota hai. Sabse chota (shortest) kaun hai?", opts: ["P", "Q", "R", "T"], a: 3, t: "Reasoning - Puzzles" },
+  { q: "Yadi '+' ka matlab '−', '−' ka matlab '×', '×' ka matlab '÷', aur '÷' ka matlab '+' ho, to: 8 + 4 × 2 − 3 = ?", opts: ["2", "4", "6", "8"], a: 0, t: "Reasoning - Mathematical Operations" },
+  { q: "Ek ghadi me 3:15 baje ghante aur minute ki suiyon ke beech ka kona (angle) kitna hoga?", opts: ["0 degree", "7.5 degree", "15 degree", "30 degree"], a: 1, t: "Reasoning - Clock" },
+  { q: "'Sabhi billiyaan janwar hain. Kuch janwar kutte hain.' Iske aadhar par kaunsa nishkarsh (conclusion) sahi hai?", opts: ["Sabhi billiyaan kutte hain", "Kuch kutte billiyaan hain", "Nishkarsh nikalna sambhav nahi hai", "Koi billi janwar nahi hai"], a: 2, t: "Reasoning - Syllogism" },
+  { q: "Ek parivaar me, M, N ki maa hai. N, O ka pita hai. O, P ki behen hai. M ka P se kya rishta hai?", opts: ["Dadi (Grandmother)", "Maa (Mother)", "Bua (Aunt)", "Behen (Sister)"], a: 0, t: "Reasoning - Blood Relations" },
+  { q: "Yadi ek pankti me 'PENCIL' shabd ke akshar ulte kram me likhe jaayen aur phir pehle aur aakhri akshar aapas me badal diye jaayen, to kaunsa akshar ab pehle sthaan par hoga?", opts: ["P", "L", "I", "C"], a: 0, t: "Reasoning - Word Formation" },
+];
+
+const STATIC_GK_HARD_QUESTIONS = [
+  { q: "Bhartiya Samvidhan ki koun si dhara (article) Rashtrapati shasan (President's Rule) se sambandhit hai?", opts: ["Anuchhed 356", "Anuchhed 370", "Anuchhed 352", "Anuchhed 360"], a: 0, t: "Static GK - Polity" },
+  { q: "Bhartiya Samvidhan Sabha ke Mukhya (Chairman) Drafting Committee ke adhyaksh kaun the?", opts: ["Jawaharlal Nehru", "Dr. B. R. Ambedkar", "Rajendra Prasad", "Sardar Patel"], a: 1, t: "Static GK - Polity" },
+  { q: "Bhartiya Samvidhan lagu (implement) kab hua tha?", opts: ["15 August 1947", "26 November 1949", "26 January 1950", "2 October 1950"], a: 2, t: "Static GK - Polity" },
+  { q: "Bhartiya Rashtriya Congress (INC) ki sthapana kab hui thi?", opts: ["1857", "1885", "1905", "1919"], a: 1, t: "Static GK - History" },
+  { q: "1857 ke swatantrata sangram ke samay Bharat ke Governor-General kaun the?", opts: ["Lord Dalhousie", "Lord Canning", "Lord Curzon", "Lord Ripon"], a: 1, t: "Static GK - History" },
+  { q: "Jallianwala Bagh hatyakand kab hua tha?", opts: ["13 April 1919", "23 March 1931", "6 April 1930", "30 January 1948"], a: 0, t: "Static GK - History" },
+  { q: "Dandi March (Namak Satyagraha) kis varsh shuru hua tha?", opts: ["1920", "1930", "1942", "1919"], a: 1, t: "Static GK - History" },
+  { q: "Bharat Chhodo Andolan (Quit India Movement) kab shuru hua tha?", opts: ["1939", "1940", "1942", "1945"], a: 2, t: "Static GK - History" },
+  { q: "Vishwa ka sabse uncha parvat shikhar 'Mount Everest' kis desh ki seema me sthit hai?", opts: ["Bharat-China", "Nepal-China", "Bharat-Nepal", "Nepal-Bhutan"], a: 1, t: "Static GK - Geography" },
+  { q: "Bharat ki sabse lambi nadi kaunsi hai?", opts: ["Yamuna", "Brahmaputra", "Ganga", "Godavari"], a: 2, t: "Static GK - Geography" },
+  { q: "Bharat me Karak Rekha (Tropic of Cancer) kitne rajyon se hokar guzarti hai?", opts: ["6", "7", "8", "9"], a: 2, t: "Static GK - Geography" },
+  { q: "Manav sharir me sabse badi granthi (gland) kaunsi hai?", opts: ["Kidney", "Liver", "Pancreas", "Thyroid"], a: 1, t: "Static GK - Science (Biology)" },
+  { q: "Prakash sanshleshan (photosynthesis) ki prakriya paudhon ki kaunsi koshika me hoti hai?", opts: ["Mitochondria", "Chloroplast", "Nucleus", "Ribosome"], a: 1, t: "Static GK - Science (Biology)" },
+  { q: "Jal (H2O) ka kwathank (boiling point) samudra tal (sea level) par kitna hota hai?", opts: ["90°C", "100°C", "110°C", "120°C"], a: 1, t: "Static GK - Science (Physics)" },
+  { q: "Sabse halka gas kaunsi hai?", opts: ["Oxygen", "Nitrogen", "Hydrogen", "Helium"], a: 2, t: "Static GK - Science (Chemistry)" },
+  { q: "Manav sharir me haddiyon (bones) ki kul sankhya kitni hoti hai?", opts: ["196", "206", "212", "220"], a: 1, t: "Static GK - Science (Biology)" },
+  { q: "Bharat ka sabse bada rajya (kshetrafal ke aadhar par) kaunsa hai?", opts: ["Madhya Pradesh", "Maharashtra", "Rajasthan", "Uttar Pradesh"], a: 2, t: "Static GK - Geography" },
+  { q: "Bharat ki sansad (Parliament) ke kitne sadan (houses) hain?", opts: ["Ek (1)", "Do (2)", "Teen (3)", "Char (4)"], a: 1, t: "Static GK - Polity" },
+  { q: "Bharat me Mool Adhikar (Fundamental Rights) Samvidhan ke kis bhaag (part) me varnit hain?", opts: ["Bhaag II", "Bhaag III", "Bhaag IV", "Bhaag V"], a: 1, t: "Static GK - Polity" },
+  { q: "Panchvarshiya Yojana (Five Year Plan) ki avdharna Bharat ne kis desh se prerit hokar apnayi thi?", opts: ["America", "Britain", "Soviet Union (USSR)", "Japan"], a: 2, t: "Static GK - Economy" },
+];
+
+const ENGLISH_HARD_QUESTIONS = [
+  { q: "Choose the correct meaning of the idiom: 'To bell the cat'", opts: ["To decorate something", "To take a risk that others are afraid to take", "To praise someone falsely", "To waste time on trivial matters"], a: 1, t: "English - Idioms" },
+  { q: "Choose the correct meaning of the idiom: 'Once in a blue moon'", opts: ["Every night", "Very rarely", "Every month", "Very often"], a: 1, t: "English - Idioms" },
+  { q: "One word substitution: A person who can speak many languages is called:", opts: ["Linguist", "Polyglot", "Philologist", "Interpreter"], a: 1, t: "English - Vocabulary" },
+  { q: "One word substitution: A person who loves mankind is called:", opts: ["Philanthropist", "Philosopher", "Philatelist", "Misanthrope"], a: 0, t: "English - Vocabulary" },
+  { q: "Choose the correct synonym of 'Meticulous':", opts: ["Careless", "Precise and careful", "Fast", "Lazy"], a: 1, t: "English - Vocabulary" },
+  { q: "Choose the correct antonym of 'Benevolent':", opts: ["Kind", "Generous", "Malevolent", "Charitable"], a: 2, t: "English - Vocabulary" },
+  { q: "Spot the error: 'Neither of the two boys were present in the class.'", opts: ["Neither of the two", "boys were", "present in the class", "No error"], a: 1, t: "English - Error Spotting" },
+  { q: "Spot the error: 'She is one of the best student in the class.'", opts: ["She is one of", "the best student", "in the class", "No error"], a: 1, t: "English - Error Spotting" },
+  { q: "Fill in the blank with the correct preposition: 'He is good ___ mathematics.'", opts: ["in", "at", "on", "with"], a: 1, t: "English - Prepositions" },
+  { q: "Fill in the blank: 'She has been living here ___ 2010.'", opts: ["for", "since", "from", "at"], a: 1, t: "English - Prepositions" },
+  { q: "Choose the correctly punctuated sentence:", opts: ["Where are you going.", "Where are you going", "Where are you going?", "where are you going?"], a: 2, t: "English - Punctuation" },
+  { q: "Change into passive voice: 'The teacher teaches the students.'", opts: ["The students are taught by the teacher.", "The students taught by the teacher.", "The students were taught by the teacher.", "The teacher is taught by the students."], a: 0, t: "English - Voice" },
+  { q: "Change into indirect speech: 'He said, \"I am going to school.\"'", opts: ["He said that he is going to school.", "He said that he was going to school.", "He says that he is going to school.", "He told that I am going to school."], a: 1, t: "English - Narration" },
+  { q: "Choose the correctly spelt word:", opts: ["Recieve", "Receive", "Receeve", "Receve"], a: 1, t: "English - Spelling" },
+  { q: "Choose the correctly spelt word:", opts: ["Acomodate", "Accommodate", "Accomodate", "Acommodate"], a: 1, t: "English - Spelling" },
+  { q: "The novel is loosely based on the detective's early cases.", u: "loosely", opts: ["Verb", "Adverb", "Noun", "Adjective"], a: 1, t: "English - Parts of Speech" },
+  { q: "Choose the correct meaning of the idiom: 'To burn the midnight oil'", opts: ["To waste money", "To work or study late into the night", "To start a fire", "To celebrate late at night"], a: 1, t: "English - Idioms" },
+  { q: "One word substitution: A place where birds are kept is called:", opts: ["Aquarium", "Aviary", "Apiary", "Sanctuary"], a: 1, t: "English - Vocabulary" },
+  { q: "Choose the correct synonym of 'Candid':", opts: ["Deceptive", "Frank and honest", "Confused", "Hidden"], a: 1, t: "English - Vocabulary" },
+  { q: "Choose the correct antonym of 'Abundant':", opts: ["Plentiful", "Scarce", "Ample", "Excessive"], a: 1, t: "English - Vocabulary" },
+];
+
+const BUILT_IN_TESTS = [
+  { id: 'pos-1', title: 'Parts of Speech Practice', subtitle: 'English With Rani Ma\u2019am', questions: PARTS_OF_SPEECH_QUESTIONS, builtIn: true },
+  { id: 'bihar-gk-hard-1', title: 'Bihar Special GK — Toughest Mock', subtitle: 'BPSC / BSSC / Bihar Police', questions: BIHAR_GK_QUESTIONS, builtIn: true },
+  { id: 'railway-gk-hard-1', title: 'Railway GK — Toughest Mock', subtitle: 'RRB NTPC / Group D / ALP', questions: RAILWAY_GK_QUESTIONS, builtIn: true },
+  { id: 'quant-hard-1', title: 'Quantitative Aptitude — Toughest Mock', subtitle: 'SSC / Railway / Bihar Exams', questions: QUANT_HARD_QUESTIONS, builtIn: true },
+  { id: 'reasoning-hard-1', title: 'Reasoning — Toughest Mock', subtitle: 'SSC / Railway / Bihar Exams', questions: REASONING_HARD_QUESTIONS, builtIn: true },
+  { id: 'static-gk-hard-1', title: 'Static GK (History/Polity/Science) — Toughest Mock', subtitle: 'All Competitive Exams', questions: STATIC_GK_HARD_QUESTIONS, builtIn: true },
+  { id: 'english-hard-1', title: 'English Grammar & Vocabulary — Toughest Mock', subtitle: 'SSC / Railway / Bihar Exams', questions: ENGLISH_HARD_QUESTIONS, builtIn: true },
+];
+
+function computeResult(test, answers) {
+  let correct = 0, wrong = 0, skipped = 0;
+  const topicStats = {};
+  test.questions.forEach((q, i) => {
+    const t = q.t || 'General';
+    if (!topicStats[t]) topicStats[t] = { correct: 0, total: 0 };
+    topicStats[t].total += 1;
+    const ans = answers[i];
+    if (ans === undefined) { skipped += 1; return; }
+    if (ans === q.a) { correct += 1; topicStats[t].correct += 1; }
+    else wrong += 1;
+  });
+  const topicArr = Object.entries(topicStats).map(([topic, s]) => ({
+    topic, ...s, pct: s.total ? Math.round((s.correct / s.total) * 100) : 0,
+  })).sort((a, b) => a.pct - b.pct);
+  const score = +(correct * 1 - wrong * 0.25).toFixed(2);
+  const total = test.questions.length;
+  const accuracy = correct + wrong ? Math.round((correct / (correct + wrong)) * 100) : 0;
+  return { correct, wrong, skipped, total, topicArr, score, accuracy };
+}
+
+async function loadJsonArray(key) {
+  try {
+    const raw = window.localStorage.getItem(key);
+    if (!raw) return [];
+    const parsed = JSON.parse(raw);
+    return Array.isArray(parsed) ? parsed : [];
+  } catch (e) {
+    return [];
+  }
+}
+
+async function appendToJsonArray(key, item) {
+  const current = await loadJsonArray(key);
+  const updated = [...current, item];
+  window.localStorage.setItem(key, JSON.stringify(updated));
+  return updated;
+}
+
+function Logo({ size = 40 }) {
+  return (
+    <img
+      src={LOGO_DATA_URI}
+      alt={APP_NAME}
+      style={{
+        width: size, height: size, borderRadius: '50%',
+        objectFit: 'cover', flexShrink: 0,
+        boxShadow: '0 2px 8px rgba(0,0,0,0.25)',
+      }}
+    />
+  );
+}
+
+const EMPTY_QUESTION = () => ({ qText: '', uWord: '', opts: ['', '', '', ''], correct: null, topic: '' });
+
+function App() {
+  const [student, setStudent] = useState(null);
+  const [nameInput, setNameInput] = useState('');
+  const [view, setView] = useState('login');
+  const [tab, setTab] = useState('tests');
+  const [activeTest, setActiveTest] = useState(null);
+  const [answers, setAnswers] = useState({});
+  const [current, setCurrent] = useState(0);
+  const [lastResult, setLastResult] = useState(null);
+  const [attempts, setAttempts] = useState([]);
+  const [customQuizzes, setCustomQuizzes] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+  const [expandedHistoryId, setExpandedHistoryId] = useState(null);
+  const [lbTestId, setLbTestId] = useState('pos-1');
+
+  const [newQuizTitle, setNewQuizTitle] = useState('');
+  const [newQuizSubtitle, setNewQuizSubtitle] = useState('');
+  const [newQuestions, setNewQuestions] = useState([EMPTY_QUESTION()]);
+  const [saveMsg, setSaveMsg] = useState(null);
+
+  const allTests = useMemo(() => [...BUILT_IN_TESTS, ...customQuizzes], [customQuizzes]);
+
+  const refreshAll = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const [a, q] = await Promise.all([loadJsonArray(ATTEMPTS_KEY), loadJsonArray(CUSTOM_QUIZZES_KEY)]);
+      setAttempts(a);
+      setCustomQuizzes(q);
+    } catch (e) {
+      setError('Could not load data. Please retry.');
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => { if (student) refreshAll(); }, [student, refreshAll]);
+
+  const handleLogin = () => {
+    const trimmed = nameInput.trim();
+    if (!trimmed) return;
+    setStudent(trimmed);
+    setView('dashboard');
+    setTab('tests');
+  };
+
+  const startTest = (test) => {
+    setActiveTest(test);
+    setAnswers({});
+    setCurrent(0);
+    setView('test');
+  };
+
+  const selectAnswer = (qi, oi) => setAnswers((prev) => ({ ...prev, [qi]: oi }));
+
+  const submitTest = async () => {
+    const result = computeResult(activeTest, answers);
+    const attempt = {
+      id: `${Date.now()}_${Math.random().toString(36).slice(2, 8)}`,
+      student, testId: activeTest.id, testTitle: activeTest.title,
+      ...result, timestamp: Date.now(),
+    };
+    setLastResult(attempt);
+    setView('result');
+    try {
+      setLoading(true);
+      const updated = await appendToJsonArray(ATTEMPTS_KEY, attempt);
+      setAttempts(updated);
+    } catch (e) {
+      setError('Score dikh raha hai, but saving to leaderboard failed. Check connection.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const myAttempts = useMemo(
+    () => attempts.filter((a) => a.student === student).sort((a, b) => b.timestamp - a.timestamp),
+    [attempts, student]
+  );
+
+  const bestScoreForTest = (testId) => {
+    const mine = attempts.filter((a) => a.student === student && a.testId === testId);
+    if (!mine.length) return null;
+    return Math.max(...mine.map((a) => a.score));
+  };
+
+  const leaderboardForTest = (testId) => {
+    const relevant = attempts.filter((a) => a.testId === testId);
+    const bestByStudent = {};
+    relevant.forEach((a) => {
+      if (!bestByStudent[a.student] || a.score > bestByStudent[a.student].score) bestByStudent[a.student] = a;
+    });
+    return Object.values(bestByStudent).sort((a, b) => b.score - a.score || b.accuracy - a.accuracy);
+  };
+
+  // ---- Create Quiz form helpers ----
+  const updateQField = (idx, field, value) => {
+    setNewQuestions((prev) => prev.map((qq, i) => (i === idx ? { ...qq, [field]: value } : qq)));
+  };
+  const updateQOption = (idx, optIdx, value) => {
+    setNewQuestions((prev) => prev.map((qq, i) => {
+      if (i !== idx) return qq;
+      const opts = [...qq.opts]; opts[optIdx] = value;
+      return { ...qq, opts };
+    }));
+  };
+  const setQCorrect = (idx, optIdx) => updateQField(idx, 'correct', optIdx);
+  const addQuestionRow = () => setNewQuestions((prev) => [...prev, EMPTY_QUESTION()]);
+  const removeQuestionRow = (idx) => setNewQuestions((prev) => prev.filter((_, i) => i !== idx));
+
+  const isQuizValid = newQuizTitle.trim().length > 0 && newQuestions.length > 0 &&
+    newQuestions.every((qq) => qq.qText.trim() && qq.opts.every((o) => o.trim()) && qq.correct !== null);
+
+  const resetQuizForm = () => {
+    setNewQuizTitle(''); setNewQuizSubtitle(''); setNewQuestions([EMPTY_QUESTION()]);
+  };
+
+  const saveNewQuiz = async () => {
+    if (!isQuizValid) return;
+    const quiz = {
+      id: `custom-${Date.now()}`,
+      title: newQuizTitle.trim(),
+      subtitle: newQuizSubtitle.trim() || `Added by ${student}`,
+      createdBy: student,
+      createdAt: Date.now(),
+      questions: newQuestions.map((qq) => ({
+        q: qq.qText.trim(),
+        u: qq.uWord.trim() || undefined,
+        opts: qq.opts.map((o) => o.trim()),
+        a: qq.correct,
+        t: qq.topic.trim() || 'General',
+      })),
+    };
+    try {
+      setLoading(true);
+      const updated = await appendToJsonArray(CUSTOM_QUIZZES_KEY, quiz);
+      setCustomQuizzes(updated);
+      resetQuizForm();
+      setSaveMsg('Quiz added! Everyone using this app can now attempt it.');
+      setTab('tests');
+    } catch (e) {
+      setError('Could not save the quiz. Please retry.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // ---------- LOGIN ----------
+  if (view === 'login') {
+    return (
+      <div style={{ minHeight: '100vh', background: `linear-gradient(160deg, ${NAVY}, #0f172a)`, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20, fontFamily: "'Segoe UI', system-ui, sans-serif" }}>
+        <div style={{ background: 'white', borderRadius: 16, padding: '32px 24px', width: '100%', maxWidth: 380, boxShadow: '0 10px 30px rgba(0,0,0,0.3)' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 20 }}>
+            <Logo size={44} />
+            <div>
+              <div style={{ fontSize: 22, fontWeight: 800, color: '#111827', lineHeight: 1.1 }}>{APP_NAME}</div>
+              <div style={{ fontSize: 12, color: '#6b7280' }}>Practice tests & quizzes</div>
+            </div>
+          </div>
+          <div style={{ fontSize: 13, color: '#6b7280', marginBottom: 6 }}>Enter your name to start</div>
+          <input
+            value={nameInput}
+            onChange={(e) => setNameInput(e.target.value)}
+            onKeyDown={(e) => e.key === 'Enter' && handleLogin()}
+            placeholder="e.g. Priya Sharma"
+            style={{ width: '100%', padding: '12px 14px', borderRadius: 10, border: '1.5px solid #d1d5db', fontSize: 15, marginBottom: 16, boxSizing: 'border-box' }}
+          />
+          <button onClick={handleLogin} disabled={!nameInput.trim()}
+            style={{ width: '100%', padding: 13, borderRadius: 10, border: 'none', background: nameInput.trim() ? NAVY : '#cbd5e1', color: 'white', fontWeight: 700, fontSize: 15, cursor: nameInput.trim() ? 'pointer' : 'not-allowed' }}>
+            Enter {APP_NAME}
+          </button>
+          <div style={{ fontSize: 11.5, color: '#9ca3af', marginTop: 14, lineHeight: 1.5 }}>
+            Note: your scores and any quizzes you add are saved on this device only.
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // ---------- TEST TAKING ----------
+  if (view === 'test' && activeTest) {
+    const q = activeTest.questions[current];
+    const hasUnderline = q.u && q.q.includes(q.u);
+    const renderedQ = hasUnderline ? q.q.replace(q.u, `‹‹${q.u}››`) : q.q;
+    const attemptedCount = Object.keys(answers).length;
+    return (
+      <div style={{ minHeight: '100vh', background: '#f4f5f7', fontFamily: "'Segoe UI', system-ui, sans-serif" }}>
+        <div style={{ background: NAVY, color: 'white', padding: '14px 16px', position: 'sticky', top: 0, zIndex: 10, boxShadow: '0 2px 6px rgba(0,0,0,0.15)' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <div style={{ fontWeight: 700, fontSize: 15 }}>{activeTest.title}</div>
+            <div style={{ fontSize: 13, opacity: 0.9 }}>{attemptedCount}/{activeTest.questions.length}</div>
+          </div>
+          <div style={{ height: 5, background: 'rgba(255,255,255,0.25)', borderRadius: 4, marginTop: 8, overflow: 'hidden' }}>
+            <div style={{ height: '100%', width: `${(attemptedCount / activeTest.questions.length) * 100}%`, background: '#4ade80', borderRadius: 4, transition: 'width .2s' }} />
+          </div>
+        </div>
+        <div style={{ maxWidth: 720, margin: '0 auto', padding: 16 }}>
+          <div style={{ background: 'white', borderRadius: 14, padding: '18px 16px', boxShadow: '0 1px 6px rgba(0,0,0,0.08)', marginBottom: 14 }}>
+            <div style={{ fontSize: 12, color: '#6b7280', fontWeight: 700, marginBottom: 8 }}>QUESTION {current + 1} OF {activeTest.questions.length}</div>
+            <div style={{ fontSize: 16, lineHeight: 1.5, color: '#111827', fontWeight: 500, marginBottom: 16 }}>
+              {renderedQ.split('‹‹').map((part, idx) => {
+                if (idx === 0) return <span key={idx}>{part}</span>;
+                const [bold, rest] = part.split('››');
+                return <span key={idx}><b style={{ color: NAVY, textDecoration: 'underline' }}>{bold}</b>{rest}</span>;
+              })}
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+              {q.opts.map((opt, oi) => {
+                const isSel = answers[current] === oi;
+                return (
+                  <button key={oi} onClick={() => selectAnswer(current, oi)}
+                    style={{ textAlign: 'left', padding: '12px 14px', borderRadius: 10, border: isSel ? `2px solid ${NAVY}` : '1.5px solid #e5e7eb', background: isSel ? '#eef2ff' : 'white', cursor: 'pointer', fontSize: 14.5, color: '#1f2937', display: 'flex', alignItems: 'center', gap: 10 }}>
+                    <span style={{ width: 22, height: 22, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', background: isSel ? NAVY : '#f3f4f6', color: isSel ? 'white' : '#6b7280', fontSize: 12, fontWeight: 700, flexShrink: 0 }}>{String.fromCharCode(97 + oi)}</span>
+                    {opt}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          <div style={{ display: 'flex', gap: 10, marginBottom: 16 }}>
+            <button onClick={() => setCurrent((c) => Math.max(0, c - 1))} disabled={current === 0}
+              style={{ flex: 1, padding: 12, borderRadius: 10, border: '1.5px solid #d1d5db', background: 'white', fontWeight: 600, color: current === 0 ? '#c0c0c0' : '#1f2937', cursor: current === 0 ? 'not-allowed' : 'pointer' }}>← Previous</button>
+            {current < activeTest.questions.length - 1 ? (
+              <button onClick={() => setCurrent((c) => Math.min(activeTest.questions.length - 1, c + 1))}
+                style={{ flex: 1, padding: 12, borderRadius: 10, border: 'none', background: NAVY, color: 'white', fontWeight: 700, cursor: 'pointer' }}>Next →</button>
+            ) : (
+              <button onClick={submitTest}
+                style={{ flex: 1, padding: 12, borderRadius: 10, border: 'none', background: '#16a34a', color: 'white', fontWeight: 700, cursor: 'pointer' }}>Submit Test</button>
+            )}
+          </div>
+
+          <div style={{ background: 'white', borderRadius: 12, padding: 12, boxShadow: '0 1px 4px rgba(0,0,0,0.06)', marginBottom: 20 }}>
+            <div style={{ fontSize: 12, color: '#6b7280', fontWeight: 700, marginBottom: 8 }}>QUESTION PALETTE</div>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(10, 1fr)', gap: 6 }}>
+              {activeTest.questions.map((_, i) => {
+                const isAnswered = answers[i] !== undefined;
+                const isCurrent = i === current;
+                return (
+                  <button key={i} onClick={() => setCurrent(i)}
+                    style={{ aspectRatio: '1', borderRadius: 6, fontSize: 11, fontWeight: 700, cursor: 'pointer', border: isCurrent ? `2px solid ${NAVY}` : '1px solid #e5e7eb', background: isAnswered ? '#bbf7d0' : '#f3f4f6', color: isAnswered ? '#14532d' : '#6b7280' }}>{i + 1}</button>
+                );
+              })}
+            </div>
+            <button onClick={submitTest} style={{ width: '100%', marginTop: 12, padding: 12, borderRadius: 10, border: 'none', background: '#16a34a', color: 'white', fontWeight: 700, cursor: 'pointer' }}>
+              Submit Test ({attemptedCount}/{activeTest.questions.length} done)
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // ---------- RESULT ----------
+  if (view === 'result' && lastResult) {
+    const r = lastResult;
+    const weak = r.topicArr.filter((t) => t.pct < 60);
+    const strong = r.topicArr.filter((t) => t.pct >= 80);
+    return (
+      <div style={{ minHeight: '100vh', background: '#f4f5f7', fontFamily: "'Segoe UI', system-ui, sans-serif", padding: 16 }}>
+        <div style={{ maxWidth: 720, margin: '0 auto' }}>
+          <div style={{ background: NAVY, borderRadius: 14, padding: '24px 20px', color: 'white', marginBottom: 16, boxShadow: '0 4px 14px rgba(30,58,138,0.25)' }}>
+            <div style={{ fontSize: 13, opacity: 0.8, letterSpacing: 1, textTransform: 'uppercase' }}>Test Result</div>
+            <div style={{ fontSize: 26, fontWeight: 800, marginTop: 4 }}>{r.testTitle}</div>
+            <div style={{ fontSize: 13, opacity: 0.85, marginTop: 2 }}>{r.student} · {new Date(r.timestamp).toLocaleString()}</div>
+            <div style={{ display: 'flex', gap: 20, marginTop: 18, flexWrap: 'wrap' }}>
+              <Stat label="Score" value={`${r.score} / ${r.total}`} />
+              <Stat label="Correct" value={r.correct} color="#4ade80" />
+              <Stat label="Wrong" value={r.wrong} color="#f87171" />
+              <Stat label="Skipped" value={r.skipped} color="#facc15" />
+              <Stat label="Accuracy" value={r.accuracy + '%'} />
+            </div>
+          </div>
+
+          {error && <div style={{ background: '#fef3c7', color: '#92400e', padding: 10, borderRadius: 8, fontSize: 13, marginBottom: 12 }}>{error}</div>}
+
+          <SectionTitle>Topic-wise Weak Area Analysis</SectionTitle>
+          <div style={{ background: 'white', borderRadius: 12, padding: '14px 16px', marginBottom: 16, boxShadow: '0 1px 4px rgba(0,0,0,0.06)' }}>
+            {r.topicArr.map((t) => (
+              <div key={t.topic} style={{ marginBottom: 12 }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 14, marginBottom: 4 }}>
+                  <span style={{ fontWeight: 600, color: '#1f2937' }}>{t.topic}</span>
+                  <span style={{ color: t.pct < 60 ? '#dc2626' : t.pct < 80 ? '#ca8a04' : '#16a34a', fontWeight: 700 }}>{t.correct}/{t.total} ({t.pct}%)</span>
+                </div>
+                <div style={{ height: 8, background: '#e5e7eb', borderRadius: 6, overflow: 'hidden' }}>
+                  <div style={{ height: '100%', width: t.pct + '%', background: t.pct < 60 ? '#dc2626' : t.pct < 80 ? '#eab308' : '#16a34a', borderRadius: 6 }} />
+                </div>
+              </div>
+            ))}
+          </div>
+
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 20 }}>
+            <div style={{ background: '#fef2f2', border: '1px solid #fecaca', borderRadius: 12, padding: 14 }}>
+              <div style={{ fontWeight: 700, color: '#b91c1c', marginBottom: 6, fontSize: 14 }}>⚠️ Weak Areas</div>
+              {weak.length === 0 ? <div style={{ fontSize: 13, color: '#6b7280' }}>None — solid work!</div> : weak.map((t) => <div key={t.topic} style={{ fontSize: 13, color: '#7f1d1d' }}>• {t.topic} ({t.pct}%)</div>)}
+            </div>
+            <div style={{ background: '#f0fdf4', border: '1px solid #bbf7d0', borderRadius: 12, padding: 14 }}>
+              <div style={{ fontWeight: 700, color: '#15803d', marginBottom: 6, fontSize: 14 }}>✅ Strong Areas</div>
+              {strong.length === 0 ? <div style={{ fontSize: 13, color: '#6b7280' }}>Keep practicing.</div> : strong.map((t) => <div key={t.topic} style={{ fontSize: 13, color: '#14532d' }}>• {t.topic} ({t.pct}%)</div>)}
+            </div>
+          </div>
+
+          <div style={{ display: 'flex', gap: 10, marginBottom: 30 }}>
+            <button onClick={() => { setView('dashboard'); setTab('leaderboard'); setLbTestId(r.testId); }} style={{ flex: 1, padding: 13, borderRadius: 10, border: `1.5px solid ${NAVY}`, background: 'white', color: NAVY, fontWeight: 700, cursor: 'pointer' }}>View Leaderboard</button>
+            <button onClick={() => { setView('dashboard'); setTab('tests'); }} style={{ flex: 1, padding: 13, borderRadius: 10, border: 'none', background: NAVY, color: 'white', fontWeight: 700, cursor: 'pointer' }}>Dashboard</button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // ---------- DASHBOARD ----------
+  return (
+    <div style={{ minHeight: '100vh', background: '#f4f5f7', fontFamily: "'Segoe UI', system-ui, sans-serif", paddingBottom: 70 }}>
+      <div style={{ background: NAVY, color: 'white', padding: '16px 16px 14px' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+            <Logo size={36} />
+            <div>
+              <div style={{ fontSize: 15, fontWeight: 800 }}>{APP_NAME}</div>
+              <div style={{ fontSize: 11.5, opacity: 0.75 }}>{student}</div>
+            </div>
+          </div>
+          <button onClick={() => { setStudent(null); setView('login'); setNameInput(''); }} style={{ background: 'rgba(255,255,255,0.15)', color: 'white', border: 'none', borderRadius: 8, padding: '7px 12px', fontSize: 12.5, fontWeight: 600, cursor: 'pointer' }}>Logout</button>
+        </div>
+      </div>
+
+      <div style={{ maxWidth: 720, margin: '0 auto', padding: 16 }}>
+        {loading && <div style={{ textAlign: 'center', color: '#6b7280', fontSize: 13, marginBottom: 10 }}>Loading...</div>}
+        {error && <div style={{ background: '#fef3c7', color: '#92400e', padding: 10, borderRadius: 8, fontSize: 13, marginBottom: 12 }}>{error} <button onClick={refreshAll} style={{ marginLeft: 8, background: 'none', border: 'none', color: NAVY, fontWeight: 700, cursor: 'pointer' }}>Retry</button></div>}
+        {saveMsg && tab === 'tests' && <div style={{ background: '#dcfce7', color: '#166534', padding: 10, borderRadius: 8, fontSize: 13, marginBottom: 12 }}>{saveMsg} <button onClick={() => setSaveMsg(null)} style={{ marginLeft: 8, background: 'none', border: 'none', color: '#166534', fontWeight: 700, cursor: 'pointer' }}>✕</button></div>}
+
+        {tab === 'tests' && (
+          <>
+            <SectionTitle>Available Tests</SectionTitle>
+            {allTests.map((t) => {
+              const best = bestScoreForTest(t.id);
+              return (
+                <div key={t.id} style={{ background: 'white', borderRadius: 14, padding: 16, marginBottom: 12, boxShadow: '0 1px 6px rgba(0,0,0,0.06)' }}>
+                  <div style={{ fontSize: 16, fontWeight: 700, color: '#111827' }}>{t.title}</div>
+                  <div style={{ fontSize: 12.5, color: '#6b7280', marginBottom: 10 }}>{t.subtitle} · {t.questions.length} questions</div>
+                  {best !== null && <div style={{ fontSize: 12.5, color: '#16a34a', fontWeight: 600, marginBottom: 10 }}>Your best score: {best} / {t.questions.length}</div>}
+                  <button onClick={() => startTest(t)} style={{ width: '100%', padding: 12, borderRadius: 10, border: 'none', background: NAVY, color: 'white', fontWeight: 700, cursor: 'pointer' }}>
+                    {best !== null ? 'Retake Test' : 'Start Test'}
+                  </button>
+                </div>
+              );
+            })}
+          </>
+        )}
+
+        {tab === 'leaderboard' && (
+          <>
+            <SectionTitle>Leaderboard</SectionTitle>
+            <select value={lbTestId} onChange={(e) => setLbTestId(e.target.value)}
+              style={{ width: '100%', padding: 10, borderRadius: 10, border: '1.5px solid #d1d5db', marginBottom: 14, fontSize: 14, background: 'white' }}>
+              {allTests.map((t) => <option key={t.id} value={t.id}>{t.title}</option>)}
+            </select>
+            <div style={{ background: 'white', borderRadius: 14, padding: 8, boxShadow: '0 1px 6px rgba(0,0,0,0.06)' }}>
+              {leaderboardForTest(lbTestId).length === 0 && !loading && (
+                <div style={{ padding: 20, textAlign: 'center', color: '#6b7280', fontSize: 13.5 }}>No attempts yet. Be the first to take this test!</div>
+              )}
+              {leaderboardForTest(lbTestId).map((a, idx, arr) => {
+                const isMe = a.student === student;
+                const medal = idx === 0 ? '🥇' : idx === 1 ? '🥈' : idx === 2 ? '🥉' : null;
+                return (
+                  <div key={a.student} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '12px 10px', borderBottom: idx < arr.length - 1 ? '1px solid #f0f0f0' : 'none', background: isMe ? '#eef2ff' : 'transparent', borderRadius: 8 }}>
+                    <div style={{ width: 28, textAlign: 'center', fontWeight: 800, color: '#6b7280', fontSize: 14 }}>{medal || `#${idx + 1}`}</div>
+                    <div style={{ flex: 1 }}>
+                      <div style={{ fontWeight: 700, fontSize: 14, color: '#111827' }}>{a.student}{isMe && <span style={{ color: NAVY }}> (You)</span>}</div>
+                      <div style={{ fontSize: 11.5, color: '#9ca3af' }}>{new Date(a.timestamp).toLocaleDateString()}</div>
+                    </div>
+                    <div style={{ textAlign: 'right' }}>
+                      <div style={{ fontWeight: 800, color: NAVY, fontSize: 15 }}>{a.score}</div>
+                      <div style={{ fontSize: 11, color: '#6b7280' }}>{a.accuracy}% acc</div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </>
+        )}
+
+        {tab === 'history' && (
+          <>
+            <SectionTitle>Your Attempt History</SectionTitle>
+            {myAttempts.length === 0 && !loading && (
+              <div style={{ background: 'white', borderRadius: 14, padding: 24, textAlign: 'center', color: '#6b7280', fontSize: 13.5, boxShadow: '0 1px 6px rgba(0,0,0,0.06)' }}>
+                No attempts yet. Go take a test!
+              </div>
+            )}
+            {myAttempts.map((a) => {
+              const isOpen = expandedHistoryId === a.id;
+              return (
+                <div key={a.id} style={{ background: 'white', borderRadius: 14, marginBottom: 10, boxShadow: '0 1px 6px rgba(0,0,0,0.06)', overflow: 'hidden' }}>
+                  <button onClick={() => setExpandedHistoryId(isOpen ? null : a.id)} style={{ width: '100%', textAlign: 'left', padding: 14, background: 'none', border: 'none', cursor: 'pointer', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <div>
+                      <div style={{ fontWeight: 700, fontSize: 14.5, color: '#111827' }}>{a.testTitle}</div>
+                      <div style={{ fontSize: 11.5, color: '#9ca3af' }}>{new Date(a.timestamp).toLocaleString()}</div>
+                    </div>
+                    <div style={{ textAlign: 'right' }}>
+                      <div style={{ fontWeight: 800, color: NAVY, fontSize: 16 }}>{a.score}</div>
+                      <div style={{ fontSize: 11, color: '#6b7280' }}>{isOpen ? 'Hide ▲' : 'Details ▼'}</div>
+                    </div>
+                  </button>
+                  {isOpen && (
+                    <div style={{ padding: '0 14px 14px' }}>
+                      <div style={{ display: 'flex', gap: 14, fontSize: 12.5, color: '#374151', marginBottom: 10 }}>
+                        <span>✅ {a.correct}</span><span>❌ {a.wrong}</span><span>⏭ {a.skipped}</span><span>🎯 {a.accuracy}%</span>
+                      </div>
+                      {a.topicArr.map((t) => (
+                        <div key={t.topic} style={{ marginBottom: 8 }}>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12.5 }}>
+                            <span style={{ color: '#374151' }}>{t.topic}</span>
+                            <span style={{ color: t.pct < 60 ? '#dc2626' : '#16a34a', fontWeight: 600 }}>{t.pct}%</span>
+                          </div>
+                          <div style={{ height: 6, background: '#e5e7eb', borderRadius: 4, overflow: 'hidden' }}>
+                            <div style={{ height: '100%', width: t.pct + '%', background: t.pct < 60 ? '#dc2626' : '#16a34a' }} />
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </>
+        )}
+
+        {tab === 'create' && (
+          <>
+            <SectionTitle>Create a New Quiz</SectionTitle>
+            <div style={{ background: 'white', borderRadius: 14, padding: 16, marginBottom: 14, boxShadow: '0 1px 6px rgba(0,0,0,0.06)' }}>
+              <label style={FieldLabel}>Quiz Title</label>
+              <input value={newQuizTitle} onChange={(e) => setNewQuizTitle(e.target.value)} placeholder="e.g. Tenses Practice" style={FieldInput} />
+              <label style={FieldLabel}>Subtitle (optional)</label>
+              <input value={newQuizSubtitle} onChange={(e) => setNewQuizSubtitle(e.target.value)} placeholder="e.g. Chapter 3 Revision" style={FieldInput} />
+            </div>
+
+            {newQuestions.map((qq, idx) => (
+              <div key={idx} style={{ background: 'white', borderRadius: 14, padding: 16, marginBottom: 12, boxShadow: '0 1px 6px rgba(0,0,0,0.06)' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
+                  <div style={{ fontWeight: 700, fontSize: 13.5, color: '#374151' }}>Question {idx + 1}</div>
+                  {newQuestions.length > 1 && (
+                    <button onClick={() => removeQuestionRow(idx)} style={{ background: 'none', border: 'none', color: '#dc2626', fontSize: 12.5, fontWeight: 600, cursor: 'pointer' }}>Remove</button>
+                  )}
+                </div>
+                <label style={FieldLabel}>Question text</label>
+                <textarea value={qq.qText} onChange={(e) => updateQField(idx, 'qText', e.target.value)} rows={2} placeholder="Type the question..." style={{ ...FieldInput, resize: 'vertical' }} />
+                <label style={FieldLabel}>Topic / category (optional)</label>
+                <input value={qq.topic} onChange={(e) => updateQField(idx, 'topic', e.target.value)} placeholder="e.g. Verb, Grammar, History..." style={FieldInput} />
+                <label style={FieldLabel}>Options (tap ⬤ to mark the correct one)</label>
+                {qq.opts.map((opt, oi) => (
+                  <div key={oi} style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
+                    <button onClick={() => setQCorrect(idx, oi)} style={{
+                      width: 22, height: 22, borderRadius: '50%', flexShrink: 0, cursor: 'pointer',
+                      border: qq.correct === oi ? '2px solid #16a34a' : '2px solid #d1d5db',
+                      background: qq.correct === oi ? '#16a34a' : 'white',
+                    }} title="Mark as correct" />
+                    <input value={opt} onChange={(e) => updateQOption(idx, oi, e.target.value)} placeholder={`Option ${String.fromCharCode(97 + oi)}`} style={{ ...FieldInput, marginBottom: 0, flex: 1 }} />
+                  </div>
+                ))}
+              </div>
+            ))}
+
+            <button onClick={addQuestionRow} style={{ width: '100%', padding: 12, borderRadius: 10, border: `1.5px dashed ${NAVY}`, background: 'white', color: NAVY, fontWeight: 700, cursor: 'pointer', marginBottom: 14 }}>+ Add Another Question</button>
+
+            {!isQuizValid && <div style={{ fontSize: 12, color: '#9ca3af', marginBottom: 10, textAlign: 'center' }}>Fill title, question text, all 4 options, and mark a correct answer for each question.</div>}
+            <button onClick={saveNewQuiz} disabled={!isQuizValid}
+              style={{ width: '100%', padding: 13, borderRadius: 10, border: 'none', background: isQuizValid ? '#16a34a' : '#cbd5e1', color: 'white', fontWeight: 700, cursor: isQuizValid ? 'pointer' : 'not-allowed', marginBottom: 30 }}>
+              Publish Quiz
+            </button>
+          </>
+        )}
+      </div>
+
+      <div style={{ position: 'fixed', bottom: 0, left: 0, right: 0, background: 'white', borderTop: '1px solid #e5e7eb', display: 'flex', boxShadow: '0 -2px 10px rgba(0,0,0,0.06)' }}>
+        {[
+          { key: 'tests', label: 'Tests', icon: '📝' },
+          { key: 'create', label: 'Add Quiz', icon: '➕' },
+          { key: 'leaderboard', label: 'Leaderboard', icon: '🏆' },
+          { key: 'history', label: 'History', icon: '📊' },
+        ].map((item) => (
+          <button key={item.key} onClick={() => setTab(item.key)} style={{ flex: 1, padding: '10px 0', background: 'none', border: 'none', cursor: 'pointer', color: tab === item.key ? NAVY : '#9ca3af', fontWeight: tab === item.key ? 700 : 500 }}>
+            <div style={{ fontSize: 18 }}>{item.icon}</div>
+            <div style={{ fontSize: 10.5, marginTop: 2 }}>{item.label}</div>
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+const FieldLabel = { display: 'block', fontSize: 12, color: '#6b7280', fontWeight: 600, marginBottom: 4, marginTop: 8 };
+const FieldInput = { width: '100%', padding: '10px 12px', borderRadius: 8, border: '1.5px solid #d1d5db', fontSize: 14, marginBottom: 4, boxSizing: 'border-box', fontFamily: 'inherit' };
+
+function Stat({ label, value, color }) {
+  return (
+    <div>
+      <div style={{ fontSize: 11, opacity: 0.75, textTransform: 'uppercase', letterSpacing: 0.5 }}>{label}</div>
+      <div style={{ fontSize: 22, fontWeight: 800, color: color || 'white' }}>{value}</div>
+    </div>
+  );
+}
+
+function SectionTitle({ children }) {
+  return <div style={{ fontSize: 14, fontWeight: 700, color: '#374151', margin: '4px 0 10px', letterSpacing: 0.3 }}>{children}</div>;
+}
+
+/* ==== APP CODE END ==== */
+
+const root = ReactDOM.createRoot(document.getElementById('root'));
+root.render(<App />);
+</script>
+
+<script>
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('sw.js').catch(() => {});
+  });
+}
+</script>
+</body>
+</html>
